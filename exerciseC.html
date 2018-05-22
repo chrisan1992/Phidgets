@@ -7,8 +7,196 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <script src="js/sha256.min.js"></script>
+    <script src="js/phidget22.min.js"></script>
 
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+  
     <title>Exercise C!</title>
+
+    <script>
+      /*** EXERCISE VARIABLES ***/
+      var sValue = -1;
+      var sValue2 = -1;
+      var lastSensor = -1;
+      var touchedTimes = 0;
+  
+      var phid;//the phidget variable
+      var phid2;//second sensor variable
+  
+      $(document).ready(function () {
+  
+        var conn = new phidget22.Connection(8989, 'localhost');
+        var ch = new phidget22.VoltageRatioInput();	
+        ch.setChannel(7);
+
+        var ch2 = new phidget22.VoltageRatioInput();	
+        ch2.setChannel(1);
+  
+        ch.onError = onError;
+        ch.onAttach = onAttach;
+
+        ch2.onError = onError2;
+        ch2.onAttach = onAttach2;
+  
+        ch.onDetach = function(ch) {
+          $('#ratioField').hide();
+          $('#errorField').hide();
+          $('#Attach').hide();
+          $('#noAttach').show();
+        }
+  
+        conn.connect().then(function () {
+          console.log('connected');
+          ch.open().then(function (ch) {
+            console.log('channel open');
+          }).catch(function (err) {
+            console.log('failed to open the channel:' + err);
+          });
+
+        ch2.open().then(function (ch2) {
+            console.log('channel open for 2');
+          }).catch(function (err) {
+            console.log('failed to open the channel:' + err);
+          });
+
+
+        }).catch(function (err) {
+          alert('failed to connect to server:' + err);
+        });;
+      });
+  
+      function txtScrollTop()
+      {
+        var $textarea = $('#log_textArea');
+        $textarea.scrollTop($textarea[0].scrollHeight);
+      }
+  
+      function onAttach(ch) {
+        $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+        $("#log_textArea").val($("#log_textArea").val()+"Right Phidget has been attached...\n");
+        txtScrollTop();
+        console.log(ch + ' attached');
+        phid = ch;
+  
+        phid.onSensorChange = svChange;
+        phid.onError = onError;
+
+        //This sets the sensor to a touch sensor
+        phid.setSensorType("11100");
+      }
+
+
+      function onAttach2(ch2) {
+        $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+        $("#log_textArea").val($("#log_textArea").val()+"Left Phidget has been attached...\n");
+        txtScrollTop();
+        console.log(ch2 + ' attached');
+        phid2 = ch2;
+  
+        phid2.onSensorChange = svChange2;
+        phid2.onError = onError2;
+        
+        //This sets the sensor to a touch sensor
+        phid2.setSensorType("11100");
+      }
+  
+      function svChange(sensorValue, sensorUnit) {
+        if(sensorValue != sValue)
+        {
+          //change in the sensor
+          if(sensorValue == 0)
+          {
+            if(lastSensor == 0 || lastSensor == -1)
+            {
+              $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+              $("#log_textArea").val($("#log_textArea").val()+"Right Sensor touched...\n");
+              ++touchedTimes;
+              lastSensor = 1;
+              if(touchedTimes == 16)
+              {
+                $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+                $("#log_textArea").val($("#log_textArea").val()+"Exercise completed successfully...\n");
+                $("#modal-body").html("Exercise Completed successfully!");
+                $(".modal-header").removeClass("btn-danger");
+                $(".modal-header").addClass("btn-success");
+                $('#message-modal').modal("show");
+              }
+            }
+            else
+            {
+              $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+              $("#log_textArea").val($("#log_textArea").val()+"Error, expected left sensor touched!!!\n");
+              $("#modal-body").html("Error, expected left sensor touched!!!");
+              $(".modal-header").removeClass("btn-success");
+              $(".modal-header").addClass("btn-danger");
+              $('#message-modal').modal("show");
+            }
+            //alert("svalue = "+sValue);
+          }
+          //save the current value for the touch
+          sValue = sensorValue;
+          //lastSensor = 1;
+          txtScrollTop();
+        }
+      }
+
+      function svChange2(sensorValue, sensorUnit) {
+        if(sensorValue != sValue2)
+        {
+          if(sensorValue == 1)
+          {
+            if(lastSensor == 1 || lastSensor == -1)
+            {
+              $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+              $("#log_textArea").val($("#log_textArea").val()+"Left Sensor touched...\n");
+              ++touchedTimes;
+              lastSensor = 0;
+              if(touchedTimes == 16)
+              {
+                $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+                $("#log_textArea").val($("#log_textArea").val()+"Exercise completed successfully...\n");
+                $("#modal-body").html("Exercise Completed successfully!");
+                $(".modal-header").removeClass("btn-danger");
+                $(".modal-header").addClass("btn-success");
+                $('#message-modal').modal("show");
+              }
+            }
+            else
+            {
+              $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+              $("#log_textArea").val($("#log_textArea").val()+"Error, expected right sensor touched!!!\n");
+              $("#modal-body").html("Error, expected right sensor touched!!!");
+              $(".modal-header").removeClass("btn-success");
+              $(".modal-header").addClass("btn-danger");
+              $('#message-modal').modal("show");
+            }
+          }
+          //save the current value for the touch
+          sValue2 = sensorValue;
+          //lastSensor = 0;
+          txtScrollTop();
+        }
+      }
+  
+      function onError(arg0, arg1) {
+        $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+        $("#log_textArea").val($("#log_textArea").val()+"Error...\n");
+        txtScrollTop();
+      }
+
+      function onError2(arg0, arg1) {
+        $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
+        $("#log_textArea").val($("#log_textArea").val()+"Error...\n");
+        txtScrollTop();
+      }
+        
+    </script>
+
   </head>
   <body>
   
@@ -26,17 +214,27 @@
 				</div>
 			</div>
 			
-			
+			<!-- Modal -->
+      <div class="modal fade" id="message-modal" tabindex="-1" role="dialog" aria-labelledby="message-modalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modalLabel">Message</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+              
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
 			
 			
 		</div>
-  
-    
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
   </body>
 </html>

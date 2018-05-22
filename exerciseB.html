@@ -7,8 +7,8 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-	<script src="js/sha256.min.js"></script>
-  <script src="js/phidget22.min.js"></script>
+    <script src="js/sha256.min.js"></script>
+    <script src="js/phidget22.min.js"></script>
   
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -123,6 +123,7 @@
                 $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
                 $("#log_textArea").val($("#log_textArea").val()+"Exercise completed successfully...\n");
                 $("#modal-body").html("Exercise Completed successfully!");
+                $(".modal-header").removeClass("btn-danger");
                 $(".modal-header").addClass("btn-success");
                 $('#message-modal').modal("show");
               }
@@ -132,6 +133,7 @@
               $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
               $("#log_textArea").val($("#log_textArea").val()+"Error, expected left sensor touched!!!\n");
               $("#modal-body").html("Error, expected left sensor touched!!!");
+              $(".modal-header").removeClass("btn-success");
               $(".modal-header").addClass("btn-danger");
               $('#message-modal').modal("show");
             }
@@ -160,6 +162,7 @@
                 $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
                 $("#log_textArea").val($("#log_textArea").val()+"Exercise completed successfully...\n");
                 $("#modal-body").html("Exercise Completed successfully!");
+                $(".modal-header").removeClass("btn-danger");
                 $(".modal-header").addClass("btn-success");
                 $('#message-modal').modal("show");
               }
@@ -169,6 +172,7 @@
               $("#log_textArea").val($("#log_textArea").val()+new Date().toLocaleTimeString() + " - ");
               $("#log_textArea").val($("#log_textArea").val()+"Error, expected right sensor touched!!!\n");
               $("#modal-body").html("Error, expected right sensor touched!!!");
+              $(".modal-header").removeClass("btn-success");
               $(".modal-header").addClass("btn-danger");
               $('#message-modal').modal("show");
             }
